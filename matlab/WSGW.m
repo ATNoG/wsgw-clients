@@ -15,12 +15,34 @@ classdef WSGW
     
     function subscribe(obj, topic)
       data = struct('type', 'sub', 'topic', topic);
-      numbytes = fprintf(obj.u, savejson('', data));
+      fwrite(obj.u, savejson('', data));
     endfunction
     
     function publish(obj, topic, ts, data)
-      data = struct('type', 'sub', 'topic', topic, 'ts', ts, 'data', data);
-      numbytes = fprintf(obj.u, savejson('', data));
+      data = struct('type', 'pub', 'topic', topic, 'ts', ts, 'data', data);
+      fwrite(obj.u, savejson('', data));
+    endfunction
+
+    function msg = recv(obj)
+      done = false;
+      count = 0;
+      msg = "";
+      while(!done)
+        [data, count] = fread(obj.u, 1);
+        data
+        count
+        msg = strcat(msg, char(data));
+        msg
+        if(msg(length(msg)) == '{')
+          count = count + 1;
+        endif
+        if(msg(length(msg)) == '}')
+          count = count - 1;
+        endif
+        if(count == 0)
+          done = true;
+        endif
+      endwhile
     endfunction
     
     function close(obj)
